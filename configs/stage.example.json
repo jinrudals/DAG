@@ -1,0 +1,86 @@
+{
+    "RTL-VCS": {
+        "run": {
+            "directory": "${PATH}",
+            "command": "${CMD}"
+        },
+        "variables": {
+            "PATH": "RTL/VCS/@{target}",
+            "CMD": "./run",
+            "POSTCMD": "./run",
+            "POSTOUTPUT": "output.log"
+        },
+        "post": {
+            "directory": "${PATH}",
+            "command": "${POSTCMD}",
+            "output": "${POSTOUTPUT}"
+        }
+    },
+    "RTL-LINT": {
+        "run": {
+            "directory": "${PATH}",
+            "command": "${CMD}"
+        },
+        "variables": {
+            "PATH": "LINT/@{target}",
+            "CMD": "./run",
+            "POSTCMD": "./run",
+            "POSTOUTPUT": "output.log"
+        },
+        "after": [
+            "RTL-VCS"
+        ],
+        "post": {
+            "directory": "${PATH}",
+            "command": "${POSTCMD}",
+            "output": "${POSTOUTPUT}"
+        }
+    },
+    "RTL-CDC": {
+        "run": {
+            "directory": "${PATH}",
+            "command": "${CMD}"
+        },
+        "variables": {
+            "PATH": "CDC/@{target}",
+            "CMD": "./run",
+            "POSTCMD": "./run",
+            "POSTOUTPUT": "output.log"
+        },
+        "after": [
+            "RTL-VCS"
+        ],
+        "post": {
+            "directory": "${PATH}",
+            "command": "${POSTCMD}",
+            "output": "${POSTOUTPUT}"
+        }
+    },
+    "SYN": {
+        "run": {
+            "directory": "${PATH}",
+            "command": "${CMD}"
+        },
+        "variables": {
+            "PATH": "SYN/@{target}",
+            "CMD": "./run",
+            "POSTCMD": "./run",
+            "POSTOUTPUT": "output.log"
+        }
+    },
+    "SYN-LOG": {
+        "variables": {
+            "PATH": "@{SYN.PATH}",
+            "POSTCMD": "./run",
+            "POSTOUTPUT": "output.log"
+        },
+        "after": [
+            "SYN"
+        ],
+        "post": {
+            "directory": "${PATH}",
+            "command": "${POSTCMD}",
+            "output": "${POSTOUTPUT}"
+        }
+    }
+}

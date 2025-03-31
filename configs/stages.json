@@ -1,0 +1,39 @@
+{
+    "RTL-VCS": {
+        "run": {
+            "directory": "${PATH}",
+            "command": "${CMD}"
+        },
+        "variables": {
+            "PATH": "RTL/VCS/@{target}",
+            "CMD": "./:run_vcs",
+            "POSTCMD": "[ -f simv ] && echo '0 error 0 warning' > output.txt || echo '1 error 0 warning' > output.txt",
+            "POSTOUTPUT": "output.txt"
+        },
+        "post": {
+            "directory": "${PATH}",
+            "command": "${POSTCMD}",
+            "output": "${POSTOUTPUT}"
+        }
+    },
+    "RTL-LINT": {
+        "run": {
+            "directory": "${PATH}",
+            "command": "${CMD}"
+        },
+        "variables": {
+            "PATH": "LINT/FUNC/@{target}",
+            "CMD": "make lint",
+            "POSTCMD": "./run",
+            "POSTOUTPUT": "output.log"
+        },
+        "after": [
+            "RTL-VCS"
+        ],
+        "post": {
+            "directory": "${PATH}",
+            "command": "${POSTCMD}",
+            "output": "${POSTOUTPUT}"
+        }
+    }
+}

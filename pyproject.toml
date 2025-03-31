@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dag"
+version = "0.0.1"
+description = "A DAG execution tool"
+authors = [
+    { name = "Benjamin Jin", email = "benjamin.jin@bos-semi.com" }
+]
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+workscript = "dag.main:main"

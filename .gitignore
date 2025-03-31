@@ -1,0 +1,5 @@
+/env/*
+*.dot
+__pycache__/
+/src/bos_dag.egg-info/*
+/dist
