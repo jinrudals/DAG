@@ -1,3 +1,5 @@
+"""Main entry point for DAG build and execution tool."""
+
 import json
 import os
 
@@ -6,9 +8,11 @@ from . import parser
 from . import runner
 from . import builder
 
-logger = lg.getLogger(__name__)
+logger = lg.get_logger(__name__)
+
 
 def set_logger(args):
+    """Set logging level based on CLI arguments."""
     if args.verbosity:
         logger.setLevel(lg.logging.INFO)
     if args.debug:
@@ -18,11 +22,14 @@ def set_logger(args):
 
     logger.addHandler(lg.logging.StreamHandler())
 
+
 def main():
+    """Parse arguments and dispatch commands."""
     parserd = parser.parser
     args = parserd.parse_args()
     set_logger(args)
-    logger.debug(f"Arguments: {args}")
+    logger.debug("Arguments: %s", args)
+
     if args.command == "merge":
         merge(args)
     if args.command == "run":
@@ -32,22 +39,27 @@ def main():
     if args.command == "post":
         run(args, "post")
 
+
 def merge_items(args):
-    with open(args.stages) as f:
+    """Load stages and targets and perform merging."""
+    with open(args.stages, encoding="utf-8") as f:
         stages = json.load(f)
-    with open(args.targets) as f:
+    with open(args.targets, encoding="utf-8") as f:
         targets = json.load(f)
     b = builder.Builder(stages, targets)
-    combined = b.build()
-    return combined
+    return b.build()
+
 
 def merge(args):
+    """Write merged stage definitions to output JSON."""
     combined = merge_items(args)
-    with open(args.output, "w") as f:
+    with open(args.output, "w", encoding="utf-8") as f:
         json.dump(combined, f, indent=4)
 
+
 def run(args, mode="all"):
-    with open(args.stages) as f:
+    """Execute DAG stages or post steps."""
+    with open(args.stages, encoding="utf-8") as f:
         all_stages = json.load(f)
 
     stages = all_stages
@@ -56,7 +68,6 @@ def run(args, mode="all"):
         if args.only not in all_stages:
             raise ValueError(f"Stage '{args.only}' not found in merged file")
 
-        # Recursive dependency resolver
         def collect_with_deps(stage_name, visited):
             if stage_name in visited:
                 return
@@ -72,7 +83,6 @@ def run(args, mode="all"):
 
         stages = {k: all_stages[k] for k in selected}
 
-        # Remove non-existent links to unselected stages
         for v in stages.values():
             v["before"] = [b for b in v.get("before", []) if b in stages]
             v["after"] = [a for a in v.get("after", []) if a in stages]
@@ -84,29 +94,32 @@ def run(args, mode="all"):
 
 
 def collect(args):
-    with open(args.stages) as f:
+    """Collect post outputs from executed stages into a single JSON report."""
+    with open(args.stages, encoding="utf-8") as f:
         stages = json.load(f)
+
     runs = runner.Runner.create_from_dict(stages)
     outputs = {}
+
     for name, node in runs.nodes.items():
         if node.post:
             directory = node.post.get("directory", "")
             output = node.post.get("output", "")
-            filename = "{}/{}".format(directory, output)
+            filename = f"{directory}/{output}"
             if not os.path.isfile(filename):
                 outputs[name] = {
-                    "status" : "failed",
-                    "content" : "File not found",
-                    "filename" : filename
+                    "status": "failed",
+                    "content": "File not found",
+                    "filename": filename
                 }
                 continue
 
-            with open(filename) as f:
+            with open(filename, encoding="utf-8") as f:
                 outputs[name] = {
-                    "status" : "unverified",
-                    "content" : f.read(),
-                    "filename" : filename
+                    "status": "unverified",
+                    "content": f.read(),
+                    "filename": filename
                 }
 
-    with open(args.output, "w") as f:
+    with open(args.output, "w", encoding="utf-8") as f:
         json.dump(outputs, f, indent=4)
